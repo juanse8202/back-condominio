@@ -33,6 +33,7 @@ ALLOWED_HOSTS = [
     'localhost',
     '192.168.100.7',
     '10.50.92.160',
+     "back-condominio-production.up.railway.app",
 ]
 
 # Para desarrollo local, permitir cualquier host
