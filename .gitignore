@@ -1,3 +1,7 @@
+# Variables de entorno
+.env
+.env.local
+
 # Entorno virtual
 venv/
 ENV/
