@@ -14,12 +14,19 @@ from pathlib import Path
 import dj_database_url
 from decouple import config
 from datetime import timedelta
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-# Quick-start development settings - unsuitable for production
+# Configuración de ALLOWED_HOSTS para Railway
+RAILWAY_PUBLIC_DOMAIN = config('RAILWAY_PUBLIC_DOMAIN', default='')
+RAILWAY_STATIC_URL = config('RAILWAY_STATIC_URL', default='')
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -149,6 +156,9 @@ STATIC_URL = 'static/'
 # ESTA ES LA LÍNEA QUE FALTA:
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+MEDIA_URL = '/media/'
+
+# Si usas WhiteNoise (muy recomendado para producción)
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
