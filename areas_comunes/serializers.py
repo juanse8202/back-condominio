@@ -8,7 +8,7 @@ class AreaComunSerializer(serializers.ModelSerializer):
     class Meta:
         model = AreaComun
         fields = ['id', 'nombre', 'descripcion', 'capacidad', 'horario_apertura', 
-                  'horario_cierre', 'tarifa_hora', 'activa', 'disponible']
+                  'horario_cierre', 'tarifa_hora', 'tipo_cobro', 'activa', 'disponible']
     
     def get_disponible(self, obj):
         return obj.activa
@@ -22,6 +22,6 @@ class ReservaAreaComunSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReservaAreaComun
         fields = ['id', 'propietario', 'propietario_nombre', 'unidad', 'area', 'area_nombre',
-                  'fecha', 'hora_inicio', 'hora_fin', 'costo_total', 'estado', 
+                  'fecha', 'hora_inicio', 'hora_fin', 'num_personas', 'costo_total', 'estado', 
                   'codigo_reserva', 'fecha_reserva']
-        read_only_fields = ['codigo_reserva', 'fecha_reserva']
+        read_only_fields = ['codigo_reserva', 'fecha_reserva', 'costo_total']

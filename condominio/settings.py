@@ -33,7 +33,7 @@ ALLOWED_HOSTS = [
     'localhost',
     '192.168.100.7',
     '10.50.92.160',
-     "back-condominio-production.up.railway.app",
+    "back-condominio-production.up.railway.app",
 ]
 
 # Para desarrollo local, permitir cualquier host
@@ -56,12 +56,14 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
     # Módulos del sistema
+    'administracion',
     'gestion',
     'finanzas',
     'areas_comunes',
     'comunicacion',
     'mantenimiento',
     'seguridad',
+    'pagos',
 ]
 
 MIDDLEWARE = [
@@ -179,9 +181,14 @@ CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:5173',
     'http://localhost:3000',
     'http://127.0.0.1:3000',
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
+    "http://192.168.0.5:5173",
     'http://192.168.0.5:3000',
     'http://192.168.100.7:5173',
     'http://10.50.92.160:5173',
+    "http://192.168.100.6:8000",
+    "http://192.168.1.141:8000", 
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -194,16 +201,28 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:5173',
     'http://localhost:3000',
     'http://127.0.0.1:3000',
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
+    "http://192.168.0.5:5173",
     'http://192.168.0.5:3000',
     'http://192.168.100.7:5173',
     'http://10.50.92.160:5173',
+    "http://192.168.100.6:8000",
+    'http://192.168.0.17:8000',
+    "http://192.168.1.141:8000",
 ]
 
 
-API_KEY_IMGBB= config('API_KEY_IMGBB', default='')
+IMGBB_API_KEY = config('IMGBB_API_KEY', default=None)
+# Alias para compatibilidad
+
+# ============================================
+# CONFIGURACIÓN DE PLATE RECOGNIZER
+# ============================================
+PLATE_RECOGNIZER_API_KEY = config('PLATE_RECOGNIZER_API_KEY', default='')
 
 # ============================================
 # CONFIGURACIÓN DE STRIPE
 # ============================================
-STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY', default='sk_test_51QQkQMITLTTvpAjcEK...')  # Clave secreta de prueba
-STRIPE_PUBLISHABLE_KEY = config('STRIPE_PUBLISHABLE_KEY', default='pk_test_51QQkQMITLTTvpAjcEK...')  # Clave pública de prueba
+STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY', default='')
+STRIPE_PUBLISHABLE_KEY = config('STRIPE_PUBLISHABLE_KEY', default='')

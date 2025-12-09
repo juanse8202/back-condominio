@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from gestion.models import Propietario
+from gestion.models import Propietario, Vehiculo, UnidadHabitacional
 import uuid
 import qrcode
 from io import BytesIO
@@ -25,6 +25,8 @@ class Visita(models.Model):
     
     codigo_acceso = models.CharField(max_length=36, unique=True, default=uuid.uuid4)
     qr_code = models.ImageField(upload_to='qrcodes_visitas/', blank=True)
+    qr_code_url = models.URLField(max_length=500, blank=True, null=True, help_text='URL de QR en ImgBB')
+    qr_code_delete_url = models.URLField(max_length=500, blank=True, null=True, help_text='URL para eliminar QR de ImgBB')
     estado = models.CharField(max_length=20, choices=ESTADO_VISITA, default='programada')
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     
@@ -65,6 +67,8 @@ class RegistroVisita(models.Model):
     guardia_registro = models.CharField(max_length=100)
     observaciones = models.TextField(blank=True)
     foto_entrada = models.ImageField(upload_to='fotos_visitas/', null=True, blank=True)
+    foto_entrada_url = models.URLField(max_length=500, blank=True, null=True, help_text='URL de foto en ImgBB')
+    foto_entrada_delete_url = models.URLField(max_length=500, blank=True, null=True, help_text='URL para eliminar foto de ImgBB')
     
     def __str__(self):
         return f"{self.visita.nombre_visitante} - {self.hora_entrada}"
@@ -105,3 +109,66 @@ class ComunicacionGuardia(models.Model):
     
     def __str__(self):
         return f"{self.tipo} - {self.propietario.user.get_full_name()} - {self.fecha_solicitud}"
+
+class PlateRecognitionLog(models.Model):
+    """Historial de reconocimientos de placas vehiculares"""
+    
+    CONFIDENCE_CHOICES = [
+        ('high', 'Alta'),
+        ('medium', 'Media'),
+        ('low', 'Baja'),
+    ]
+    
+    TIPO_ACCESO_CHOICES = [
+        ('residente', 'Residente'),
+        ('visita', 'Visita'),
+        ('proveedor', 'Proveedor'),
+        ('desconocido', 'Desconocido'),
+    ]
+    
+    # Información de la placa
+    plate_number = models.CharField(max_length=20, db_index=True)
+    plate_region = models.CharField(max_length=50, null=True, blank=True)  # País/región detectada
+    
+    # Información del vehículo detectado por Plate Recognizer
+    vehicle_type = models.CharField(max_length=50, null=True, blank=True)  # car, truck, motorcycle, etc
+    vehicle_make = models.CharField(max_length=50, null=True, blank=True)  # marca detectada
+    vehicle_model = models.CharField(max_length=50, null=True, blank=True)  # modelo detectado
+    vehicle_color = models.CharField(max_length=30, null=True, blank=True)  # color detectado
+    
+    # Imagen y datos técnicos
+    image = models.ImageField(upload_to='plate_recognition/')
+    image_url = models.URLField(max_length=500, blank=True, null=True, help_text='URL de imagen en ImgBB')
+    image_delete_url = models.URLField(max_length=500, blank=True, null=True, help_text='URL para eliminar imagen de ImgBB')
+    confidence = models.CharField(max_length=20, choices=CONFIDENCE_CHOICES)
+    confidence_score = models.FloatField(null=True, blank=True)  # Score numérico (0-100)
+    raw_response = models.JSONField(null=True, blank=True)  # Respuesta completa de Plate Recognizer
+    
+    # Relaciones
+    vehiculo = models.ForeignKey(Vehiculo, on_delete=models.SET_NULL, null=True, blank=True, related_name='reconocimientos')
+    unidad = models.ForeignKey(UnidadHabitacional, on_delete=models.SET_NULL, null=True, blank=True)
+    visita = models.ForeignKey(Visita, on_delete=models.SET_NULL, null=True, blank=True, related_name='reconocimientos')
+    guardia = models.ForeignKey(Guardia, on_delete=models.SET_NULL, null=True, blank=True)
+    
+    # Control de acceso
+    is_registered = models.BooleanField(default=False)
+    tipo_acceso = models.CharField(max_length=20, choices=TIPO_ACCESO_CHOICES, default='desconocido')
+    acceso_permitido = models.BooleanField(default=False)
+    acceso_automatico = models.BooleanField(default=False)  # Si fue aprobado automáticamente
+    
+    # Metadata
+    fecha_reconocimiento = models.DateTimeField(auto_now_add=True, db_index=True)
+    observaciones = models.TextField(null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-fecha_reconocimiento']
+        verbose_name = 'Registro de Reconocimiento de Placa'
+        verbose_name_plural = 'Registros de Reconocimiento de Placas'
+        indexes = [
+            models.Index(fields=['-fecha_reconocimiento']),
+            models.Index(fields=['plate_number']),
+            models.Index(fields=['acceso_permitido']),
+        ]
+    
+    def __str__(self):
+        return f"{self.plate_number} - {self.fecha_reconocimiento.strftime('%Y-%m-%d %H:%M')}"

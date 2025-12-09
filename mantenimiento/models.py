@@ -18,11 +18,11 @@ class Reporte(models.Model):
         ('rechazado', 'Rechazado'),
     )
     
-    propietario = models.ForeignKey(Propietario, on_delete=models.CASCADE)
+    propietario = models.ForeignKey(Propietario, on_delete=models.CASCADE, null=True, blank=True)
     tipo = models.CharField(max_length=20, choices=TIPO_REPORTE)
     titulo = models.CharField(max_length=200)
-    descripcion = models.TextField()
-    ubicacion = models.CharField(max_length=100)
+    descripcion = models.TextField(blank=True)
+    ubicacion = models.CharField(max_length=100, blank=True)
     foto = models.ImageField(upload_to='reportes/', null=True, blank=True)
     fecha_reporte = models.DateTimeField(auto_now_add=True)
     estado = models.CharField(max_length=20, choices=ESTADO_REPORTE, default='pendiente')

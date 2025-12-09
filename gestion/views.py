@@ -1,5 +1,5 @@
 from rest_framework import viewsets, filters
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
@@ -43,6 +43,54 @@ class VehiculoViewSet(viewsets.ModelViewSet):
     search_fields = ['placa', 'marca', 'modelo', 'color']
     ordering_fields = ['fecha_registro', 'placa']
     ordering = ['-fecha_registro']
+
+    @action(detail=True, methods=['post'], url_path='generate_qr')
+    def generate_qr(self, request, pk=None):
+        """Genera un código QR para el vehículo"""
+        import qrcode
+        from io import BytesIO
+        from django.core.files import File
+        import os
+        
+        vehiculo = self.get_object()
+        
+        # Datos del QR: información del vehículo
+        qr_data = f"Vehículo: {vehiculo.placa}\nMarca: {vehiculo.marca}\nModelo: {vehiculo.modelo}\nPropietario: {vehiculo.propietario.user.get_full_name()}"
+        
+        # Generar QR
+        qr = qrcode.QRCode(version=1, box_size=10, border=5)
+        qr.add_data(qr_data)
+        qr.make(fit=True)
+        
+        img = qr.make_image(fill_color="black", back_color="white")
+        
+        # Guardar en memoria
+        buffer = BytesIO()
+        img.save(buffer, format='PNG')
+        buffer.seek(0)
+        
+        # Guardar en el modelo (si tienes un campo para QR)
+        filename = f'vehiculo_qr_{vehiculo.placa}_{vehiculo.id}.png'
+        
+        # Crear directorio si no existe
+        qr_dir = 'qrcodes_vehiculos'
+        os.makedirs(os.path.join('media', qr_dir), exist_ok=True)
+        
+        # Guardar archivo
+        qr_path = os.path.join(qr_dir, filename)
+        full_path = os.path.join('media', qr_path)
+        
+        with open(full_path, 'wb') as f:
+            f.write(buffer.getvalue())
+        
+        # Construir URL completa
+        qr_url = request.build_absolute_uri(f'/media/{qr_path}')
+        
+        return Response({
+            'success': True,
+            'qr_code_url': qr_url,
+            'message': 'QR generado exitosamente'
+        })
 
 
 class MascotaViewSet(viewsets.ModelViewSet):

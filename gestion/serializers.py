@@ -20,7 +20,8 @@ class PropietarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Propietario
         fields = ['id', 'user', 'documento_identidad', 'telefono', 'fecha_registro', 
-                  'nombre_completo', 'email', 'first_name', 'last_name', 'username']
+                  'nombre_completo', 'email', 'first_name', 'last_name', 'username',
+                  'meses_mora', 'restringido_por_mora']
         read_only_fields = ['fecha_registro']
     
     def get_nombre_completo(self, obj):
@@ -79,12 +80,14 @@ class UnidadHabitacionalSerializer(serializers.ModelSerializer):
 
 class VehiculoSerializer(serializers.ModelSerializer):
     propietario_nombre = serializers.CharField(source='propietario.user.get_full_name', read_only=True)
-    unidad = serializers.CharField(source='propietario.unidad.numero', read_only=True)
+    unidad_numero = serializers.CharField(source='propietario.unidad.numero', read_only=True)
+    tipo_display = serializers.CharField(source='get_tipo_display', read_only=True)
     
     class Meta:
         model = Vehiculo
-        fields = ['id', 'propietario', 'propietario_nombre', 'unidad', 
-                  'placa', 'marca', 'modelo', 'color', 'fecha_registro']
+        fields = ['id', 'propietario', 'propietario_nombre', 'unidad', 'unidad_numero',
+                  'placa', 'marca', 'modelo', 'color', 'tipo', 'tipo_display', 'año', 'activo',
+                  'foto_vehiculo', 'fecha_registro']
         read_only_fields = ['fecha_registro']
 
 
